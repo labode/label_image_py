@@ -147,32 +147,28 @@ def write_image(center_map, input_file, output_file, label):
 
 if __name__ == '__main__':
     # Arguments need to be supplied from command line to use this in a makefile
-    input_image = sys.argv[1]  # 'overlay.tif'
-    label_image = sys.argv[2]  # 'labels.tif'
-    output_image = sys.argv[3]  # 'output.tif'
-    label_text = sys.argv[4]  # 'ID'
+    try:
+        input_image = sys.argv[1]  # 'overlay.tif'
+        label_image = sys.argv[2]  # 'labels.tif'
+        output_image = sys.argv[3]  # 'output.tif'
 
-    error = False
+    except IndexError:
+        sys.exit('Missing parameters \nPlease supply: input image, overlay image, output image')
 
-    if not input_image or not label_image or not output_image:
-        print("Missing parameters")
-        # Explain the needed parameters to the user
-        print("Please supply: input image, overlay image, output image")
-        error = True
-
-    if not label_text:
+    try:
+        label_text = sys.argv[4]  # 'ID'
+    except IndexError:
         label_text = 'ID'
 
-    if not error:
-        print('Reading image')
-        image_array = read_image(label_image)
-        print('Looking for labels')
-        label_positions = find_labels(image_array)
-        print('Performing cluster analysis')
-        cluster_pixels = find_clusters(label_positions, image_array)
-        print('Calculating cluster centers')
-        centers = find_centers(cluster_pixels)
-        print(centers)
-        print('Labeling image')
-        write_image(centers, input_image, output_image)
-        print('Finished')
+    print('Reading image')
+    image_array = read_image(label_image)
+    print('Looking for labels')
+    label_positions = find_labels(image_array)
+    print('Performing cluster analysis')
+    cluster_pixels = find_clusters(label_positions, image_array)
+    print('Calculating cluster centers')
+    centers = find_centers(cluster_pixels)
+    print(centers)
+    print('Labeling image')
+    write_image(centers, input_image, output_image)
+    print('Finished')
