@@ -119,6 +119,7 @@ def find_centers(cluster_map):
         # TODO: The position might not be on the label (e.g. u-shaped vessel)
         #  => Check if position is on label?
         #  => What if not? Search closest label pixel?
+        #  => Look up y middle and then only look for x_min and x_max on that level?
         # y => centered, x => 10% from left edge, as we write left to right
         # TODO: Works but does not make any sense...
         center = [int(round((x_max - x_min) / 2, 0) + x_min),
@@ -128,7 +129,7 @@ def find_centers(cluster_map):
     return cluster_centers
 
 
-def write_image(center_map, input_file, output_file):
+def write_image(center_map, input_file, output_file, label):
     # https://www.tutorialspoint.com/python_pillow/python_pillow_writing_text_on_image.htm
     # open image
     image = Image.open(input_file)
@@ -138,7 +139,7 @@ def write_image(center_map, input_file, output_file):
     font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 7)
     # for each center write label
     for center in center_map:
-        draw.text((center[1], center[0]), "ID " + str(center[2]), font=font, fill=(255, 255, 255))
+        draw.text((center[1], center[0]), label + ' ' + str(center[2]), font=font, fill=(255, 255, 255))
 
     # write image
     image.save(output_file)
@@ -149,6 +150,7 @@ if __name__ == '__main__':
     input_image = sys.argv[1]  # 'overlay.tif'
     label_image = sys.argv[2]  # 'labels.tif'
     output_image = sys.argv[3]  # 'output.tif'
+    label_text = sys.argv[4]  # 'ID'
 
     error = False
 
@@ -158,15 +160,16 @@ if __name__ == '__main__':
         print("Please supply: input image, overlay image, output image")
         error = True
 
+    if not label_text:
+        label_text = 'ID'
+
     if not error:
         print('Reading image')
         image_array = read_image(label_image)
         print('Looking for labels')
         label_positions = find_labels(image_array)
-        # print(label_positions)
         print('Performing cluster analysis')
         cluster_pixels = find_clusters(label_positions, image_array)
-        # print(cluster_pixels)
         print('Calculating cluster centers')
         centers = find_centers(cluster_pixels)
         print(centers)
