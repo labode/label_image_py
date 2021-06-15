@@ -170,5 +170,5 @@ if __name__ == '__main__':
     centers = find_centers(cluster_pixels)
     print(centers)
     print('Labeling image')
-    write_image(centers, input_image, output_image)
+    write_image(centers, input_image, output_image, label_text)
     print('Finished')
