@@ -13,25 +13,26 @@ def read_image(filename):
     return image
 
 
-# This is not pretty and definitely takes some time to complete... but me no smrt :(
 def find_labels(img_array):
-    # TODO: Using the ol image is bullshit! we need to make seg_art_gen@zxx.tif (NOT! _th) images
+    # TODO: The ol image is unusable for a label search! we need to make seg_art_gen@zxx.tif (NOT! _th) images
     #  and can then take the label directly from them! (rule is already in MF, only need to add it as prereq)
 
     labels = []
 
+    # Note: The array values are ordered [y, x]
     size = img_array.shape
 
     x = 0
-    while x < size[0]:
-        percent = round(x / (size[0] / 100), 2)
+    while x < size[1]:
+        # Progress output to keep the user entertained
+        percent = round(x / (size[1] / 100), 2)
         print(str(percent) + '% done')
 
         y = 0
-        while y < size[1]:
+        while y < size[0]:
             # If the pixel does not have a value of 0 (background), we have found a label and can add it to our map
-            if image_array[x, y] != 0:
-                entry = [x, y, image_array[x, y]]
+            if image_array[y, x] != 0:
+                entry = [x, y, image_array[y, x]]
                 labels.append(entry)
 
             y += 1
@@ -45,11 +46,16 @@ def find_clusters(label_map, img_array):
     clusters = []
 
     while len(label_map) > 0:
-        # Create empty cluster
+        # Create empty cluster and search list
         cluster = []
         search = []
+
         # Take first pixel
         start_px = label_map[0]
+
+        # The start px will be the first point in our cluster,
+        # the starting point for our search and we wont use it afterwards,
+        # so we remove it from the label map
         cluster.append(start_px)
         search.append(start_px)
         label_map.remove(start_px)
@@ -81,11 +87,11 @@ def find_neighbours(label_map, img_array, position):
 
     if position[0] - 1 >= 0:
         x_values.append(position[0] - 1)
-    if position[0] + 1 < size[0]:
+    if position[0] + 1 < size[1]:
         x_values.append(position[0] + 1)
     if position[1] - 1 >= 0:
         y_values.append(position[1] - 1)
-    if position[1] + 1 < size[1]:
+    if position[1] + 1 < size[0]:
         y_values.append(position[1] + 1)
 
     # => Check if pixels at these positions are in the map with a matching label
@@ -121,9 +127,9 @@ def find_centers(cluster_map):
         #  => What if not? Search closest label pixel?
         #  => Look up y middle and then only look for x_min and x_max on that level?
         # y => centered, x => 10% from left edge, as we write left to right
-        # TODO: Works but does not make any sense...
-        center = [int(round((x_max - x_min) / 2, 0) + x_min),
-                  int(round((y_max - y_min) / 20, 0) + y_min), cluster[0][2]]
+        center = [int(round((y_max - y_min) / 2, 0) + y_min),
+                  int(round((x_max - x_min) / 20, 0) + x_min), cluster[0][2]]
+        print(center)
         cluster_centers.append(center)
 
     return cluster_centers
@@ -136,6 +142,7 @@ def write_image(center_map, input_file, output_file, label):
     # define settings
     draw = ImageDraw.Draw(image)
     # TODO: Fine tune font size and type?
+    # TODO: This will only work on a unix(-like) system! => Change? To what? Ask user for path to font?
     font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 7)
     # for each center write label
     for center in center_map:
@@ -168,7 +175,6 @@ if __name__ == '__main__':
     cluster_pixels = find_clusters(label_positions, image_array)
     print('Calculating cluster centers')
     centers = find_centers(cluster_pixels)
-    print(centers)
     print('Labeling image')
     write_image(centers, input_image, output_image, label_text)
     print('Finished')
