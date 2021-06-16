@@ -12,4 +12,4 @@ Finds label clusters in binary image and writes a label text to the correspondin
 
 ## Usage
 ### Example
-`python3 main.py overlay_image.tif label_image.tif Output_image.tif ID` 
+`python3 label_image.py overlay_image.tif label_image.tif Output_image.tif ID` 
