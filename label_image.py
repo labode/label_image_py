@@ -113,23 +113,29 @@ def find_centers(cluster_map):
     for cluster in cluster_map:
         x_range = []
         y_range = []
+
+        # find the y-extend and its center
         for pixel in cluster:
-            x_range.append(pixel[0])
             y_range.append(pixel[1])
 
-        x_min = min(x_range)
-        x_max = max(x_range)
         y_min = min(y_range)
         y_max = max(y_range)
 
-        # TODO: The position might not be on the label (e.g. u-shaped vessel)
-        #  => Check if position is on label?
-        #  => What if not? Search closest label pixel?
-        #  => Look up y middle and then only look for x_min and x_max on that level?
-        # y => centered, x => 10% from left edge, as we write left to right
-        center = [int(round((y_max - y_min) / 2, 0) + y_min),
-                  int(round((x_max - x_min) / 20, 0) + x_min), cluster[0][2]]
-        print(center)
+        y_center = int(round((y_max - y_min) / 2, 0) + y_min)
+
+        # TODO: There must be a more efficient way to do this
+        # find the x-extend at the y center level (using the overall )
+        for pixel in cluster:
+            if pixel[1] == y_center:
+                x_range.append(pixel[0])
+
+        x_min = min(x_range)
+        x_max = max(x_range)
+
+        # This is not actually the center but 10% of the width from the left, as we write left to right
+        x_center = int(round((x_max - x_min) / 20, 0) + x_min)
+
+        center = [y_center, x_center, cluster[0][2]]
         cluster_centers.append(center)
 
     return cluster_centers
