@@ -7,8 +7,16 @@ from PIL import Image, ImageDraw, ImageFont
 # https://note.nkmk.me/en/python-numpy-image-processing/
 
 
-def read_image(filename):
-    image = np.array(Image.open(filename), np.int16)
+def read_image(filename, downsize_factor):
+    img = Image.open(filename)
+    size = img.size
+
+    if downsize_factor != 1:
+        small_img = img.resize((int(size[0]/downsize_factor), int(size[1]/downsize_factor)))
+    else:
+        small_img = img
+
+    image = np.array(small_img, np.int16)
 
     return image
 
@@ -141,7 +149,7 @@ def find_centers(cluster_map):
     return cluster_centers
 
 
-def write_image(center_map, input_file, output_file, label):
+def write_image(center_map, input_file, output_file, label, downsize_factor):
     # https://www.tutorialspoint.com/python_pillow/python_pillow_writing_text_on_image.htm
     # open image
     image = Image.open(input_file)
@@ -149,10 +157,11 @@ def write_image(center_map, input_file, output_file, label):
     draw = ImageDraw.Draw(image)
     # TODO: Fine tune font size and type?
     # TODO: This will only work on a unix(-like) system! => Change? To what? Ask user for path to font?
-    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 7)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 10)
     # for each center write label
     for center in center_map:
-        draw.text((center[1], center[0]), label + ' ' + str(center[2]), font=font, fill=(255, 255, 255))
+        draw.text((center[1]*downsize_factor, center[0]*downsize_factor),
+                  label + ' ' + str(center[2]), font=font, fill=(255, 255, 255))
 
     # write image
     image.save(output_file)
@@ -169,12 +178,18 @@ if __name__ == '__main__':
         sys.exit('Missing parameters \nPlease supply: input image, overlay image, output image')
 
     try:
-        label_text = sys.argv[4]  # 'ID'
+        sampling_factor = int(sys.argv[4])
     except IndexError:
+        sampling_factor = 1
+
+    try:
+        label_text = sys.argv[5]  # 'ID'
+    except IndexError:
+        # TODO: No Label if nothing?
         label_text = 'ID'
 
     print('Reading image')
-    image_array = read_image(label_image)
+    image_array = read_image(label_image, sampling_factor)
     print('Looking for labels')
     label_positions = find_labels(image_array)
     print('Performing cluster analysis')
@@ -182,5 +197,5 @@ if __name__ == '__main__':
     print('Calculating cluster centers')
     centers = find_centers(cluster_pixels)
     print('Labeling image')
-    write_image(centers, input_image, output_image, label_text)
+    write_image(centers, input_image, output_image, label_text, sampling_factor)
     print('Finished')
