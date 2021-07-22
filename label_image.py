@@ -157,7 +157,7 @@ def write_image(center_map, input_file, output_file, label, downsize_factor):
     draw = ImageDraw.Draw(image)
     # TODO: Fine tune font size and type?
     # TODO: This will only work on a unix(-like) system! => Change? To what? Ask user for path to font?
-    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 10)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/crosextra/Caladea-Regular.ttf', 10)
     # for each center write label
     for center in center_map:
         draw.text((center[1]*downsize_factor, center[0]*downsize_factor),
