@@ -155,7 +155,6 @@ def write_image(center_map, input_file, output_file, label, downsize_factor):
     image = Image.open(input_file)
     # define settings
     draw = ImageDraw.Draw(image)
-    # TODO: Fine tune font size and type?
     # TODO: This will only work on a unix(-like) system! => Change? To what? Ask user for path to font?
     font = ImageFont.truetype('/usr/share/fonts/truetype/crosextra/Caladea-Regular.ttf', 10)
     # for each center write label
